@@ -1,6 +1,7 @@
 #include "core.h"
 #include "net.h"
 #include "logger.h"
+#include "interface.h"
 #include <arpa/inet.h>
 #include <csignal>
 #include <ctime>
@@ -37,18 +38,14 @@ void usage(){std::cout<<"Usage: server --run [-b clients.conf] [-l server.log] [
     "  -h, --help           Show help\n";}
 }
 int main(int argc,char** argv) {
-    using namespace course;std::string db="./clients.conf",log="./server.log";uint32_t port=33333;
-    if(argc==1){usage();return 0;}
+    using namespace course;
     std::signal(SIGPIPE,SIG_IGN);
     try {
-        for(int i=1;i<argc;++i){std::string a=argv[i];
-            if(a=="-h"||a=="--help"){usage();return 0;}
-            if(a=="--run")continue;
-            if(a!="-b"&&a!="--database"&&a!="-l"&&a!="--log"&&a!="-p"&&a!="--port")throw std::runtime_error("unknown option: "+a);
-            if(++i==argc)throw std::runtime_error("missing option value: "+a);
-            if(a=="-b"||a=="--database")db=argv[i];else if(a=="-l"||a=="--log")log=argv[i];
-            else {port=parse_number(argv[i],65535);if(!port)throw std::runtime_error("port cannot be zero");}
-        }
+        auto opts=parse_options(argc,const_cast<const char* const*>(argv));
+        if (opts.help) {usage();return 0;}
+        const std::string& db=opts.database;
+        const std::string& log=opts.log;
+        const uint32_t port=opts.port;
         Logger logger(log);
         try {
             auto users=load_users(db);

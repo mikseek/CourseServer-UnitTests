@@ -4,6 +4,7 @@
 #include "core.h"
 #include "net.h"
 #include "logger.h"
+#include "interface.h"
 #include <regex>
 #include <cassert>
 #include <cstdio>
@@ -122,6 +123,59 @@ int main() {
     std::cout << "T30 RUN" << std::endl;
     { TempFile f(""); bool thrown=false; try {Logger log(f.path+"/server.log");} catch(const std::runtime_error&) {thrown=true;} assert(thrown); }
     std::cout << "T30 PASS" << std::endl;
-    std::cout << "TOTAL 30 PASSED 30 FAILED 0" << std::endl;
+
+    // Модульные тесты интерфейса командной строки (без сетевого запуска).
+    std::cout << "T31 RUN" << std::endl;
+    { const char* args[] = { "server" }; assert(parse_options(1, args).help); }
+    std::cout << "T31 PASS" << std::endl;
+    std::cout << "T32 RUN" << std::endl;
+    { const char* args[] = { "server", "-h" }; assert(parse_options(2, args).help); }
+    std::cout << "T32 PASS" << std::endl;
+    std::cout << "T33 RUN" << std::endl;
+    { const char* args[] = { "server", "--help" }; assert(parse_options(2, args).help); }
+    std::cout << "T33 PASS" << std::endl;
+    std::cout << "T34 RUN" << std::endl;
+    { const char* args[] = { "server", "--run", "-h" }; assert(parse_options(3, args).help); }
+    std::cout << "T34 PASS" << std::endl;
+    std::cout << "T35 RUN" << std::endl;
+    { const char* args[] = { "server", "-h", "--run" }; assert(parse_options(3, args).help); }
+    std::cout << "T35 PASS" << std::endl;
+    std::cout << "T36 RUN" << std::endl;
+    { const char* args[] = { "server", "--run" }; assert(!parse_options(2, args).help && parse_options(2,args).port==33333 && parse_options(2,args).database=="./clients.conf" && parse_options(2,args).log=="./server.log"); }
+    std::cout << "T36 PASS" << std::endl;
+    std::cout << "T37 RUN" << std::endl;
+    { const char* args[] = { "server", "-b", "users.txt" }; assert(parse_options(3,args).database=="users.txt"); }
+    std::cout << "T37 PASS" << std::endl;
+    std::cout << "T38 RUN" << std::endl;
+    { const char* args[] = { "server", "--database", "users.txt" }; assert(parse_options(3,args).database=="users.txt"); }
+    std::cout << "T38 PASS" << std::endl;
+    std::cout << "T39 RUN" << std::endl;
+    { const char* args[] = { "server", "-l", "log.txt" }; assert(parse_options(3,args).log=="log.txt"); }
+    std::cout << "T39 PASS" << std::endl;
+    std::cout << "T40 RUN" << std::endl;
+    { const char* args[] = { "server", "--log", "log.txt" }; assert(parse_options(3,args).log=="log.txt"); }
+    std::cout << "T40 PASS" << std::endl;
+    std::cout << "T41 RUN" << std::endl;
+    { const char* args[] = { "server", "-p", "44214" }; assert(parse_options(3,args).port==44214); }
+    std::cout << "T41 PASS" << std::endl;
+    std::cout << "T42 RUN" << std::endl;
+    { const char* args[] = { "server", "--port", "33334" }; assert(parse_options(3,args).port==33334); }
+    std::cout << "T42 PASS" << std::endl;
+    std::cout << "T43 RUN" << std::endl;
+    { const char* args[] = { "server", "-p", "0" }; bool thrown=false; try { (void)parse_options(3,args); } catch(const std::runtime_error&) {thrown=true;} assert(thrown); }
+    std::cout << "T43 PASS" << std::endl;
+    std::cout << "T44 RUN" << std::endl;
+    { const char* args[] = { "server", "-b" }; bool thrown=false; try { (void)parse_options(2,args); } catch(const std::runtime_error&) {thrown=true;} assert(thrown); }
+    std::cout << "T44 PASS" << std::endl;
+    std::cout << "T45 RUN" << std::endl;
+    { const char* args[] = { "server", "--unknown" }; bool thrown=false; try { (void)parse_options(2,args); } catch(const std::runtime_error&) {thrown=true;} assert(thrown); }
+    std::cout << "T45 PASS" << std::endl;
+    std::cout << "T46 RUN" << std::endl;
+    { const char* args[] = { "server", "-p", "65536" }; bool thrown=false; try { (void)parse_options(3,args); } catch(const std::runtime_error&) {thrown=true;} assert(thrown); }
+    std::cout << "T46 PASS" << std::endl;
+    std::cout << "T47 RUN" << std::endl;
+    { const char* args[] = { "server", "-b", "base.txt", "-l", "log.txt", "-p", "12345" }; assert(parse_options(7,args).database=="base.txt" && parse_options(7,args).log=="log.txt" && parse_options(7,args).port==12345); }
+    std::cout << "T47 PASS" << std::endl;
+    std::cout << "TOTAL 47 PASSED 47 FAILED 0" << std::endl;
     return 0;
 }
