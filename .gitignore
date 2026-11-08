@@ -1,0 +1,4 @@
+/build/
+/clients.conf
+*.log
+.DS_Store
