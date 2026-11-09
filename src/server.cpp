@@ -74,7 +74,6 @@ int main(int argc,char** argv) {
                     if(!valid){send_text(fd,"ERR");logger.write(false,context+" authentication failed");continue;}
                     send_text(fd,"OK");uint32_t count=read_number(fd,4);
                     if(count>10000)throw std::runtime_error("vector count exceeds 10000");
-                    // Binary response header required by specification: number of results.
                     write_number(fd,count,4);
                     uint64_t total=0;
                     for(uint32_t i=0;i<count&&!stopped;++i){uint32_t size=read_number(fd,4);total+=size;
